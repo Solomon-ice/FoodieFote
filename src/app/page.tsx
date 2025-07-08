@@ -95,7 +95,7 @@ export default function HomePage() {
           <div className="text-center animate-in fade-in duration-500">
             <h2 className="font-headline text-3xl md:text-4xl font-semibold">
               <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Welcome!
+                Welcome! what are we cooking today?
               </span>
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
