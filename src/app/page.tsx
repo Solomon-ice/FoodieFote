@@ -172,7 +172,7 @@ export default function Home() {
         </div>
       </main>
       <footer className="py-6 px-4 sm:px-6 text-center text-muted-foreground text-sm">
-        <p>Crafted with AI by FoodieFoto</p>
+        <p>&copy; 2025 FoodieFoto. All rights reserved.</p>
       </footer>
     </div>
   );
