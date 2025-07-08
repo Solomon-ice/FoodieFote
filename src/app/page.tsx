@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, useCallback } from 'react';
-import { Loader2, Upload, Camera, UtensilsCrossed } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Loader2, Upload, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { identifyFood } from '@/ai/flows/identify-food';
@@ -20,7 +20,7 @@ type Recipe = {
   imageUrl: string;
 };
 
-export default function Home() {
+export default function HomePage() {
   const [appState, setAppState] = useState<AppState>('initial');
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [processingMessage, setProcessingMessage] = useState('');
@@ -93,8 +93,10 @@ export default function Home() {
       case 'initial':
         return (
           <div className="text-center animate-in fade-in duration-500">
-            <h2 className="font-headline text-3xl md:text-4xl font-semibold text-primary-foreground/90">
-              What are we cooking today?
+            <h2 className="font-headline text-3xl md:text-4xl font-semibold">
+              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Welcome! what are we cooking today?
+              </span>
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
               Upload a photo or take a picture of your ingredients.
@@ -161,9 +163,11 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       <header className="py-6 px-4 sm:px-6">
-        <div className="mx-auto max-w-4xl flex items-center gap-3">
-          <Logo className="h-8 w-8 text-primary" />
-          <h1 className="font-headline text-3xl font-bold text-primary-foreground/90">FoodieFoto</h1>
+        <div className="mx-auto max-w-4xl flex items-center justify-between">
+            <div className="flex items-center gap-3">
+                <Logo className="h-8 w-8 text-primary" />
+                <h1 className="font-headline text-3xl font-bold text-primary-foreground/90">FoodieFoto</h1>
+            </div>
         </div>
       </header>
       <main className="flex-grow flex items-center justify-center p-4">
