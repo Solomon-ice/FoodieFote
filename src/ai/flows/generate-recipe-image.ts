@@ -46,21 +46,41 @@ const generateRecipeImageFlow = ai.defineFlow(
     inputSchema: GenerateRecipeImageInputSchema,
     outputSchema: GenerateRecipeImageOutputSchema,
   },
-  async input => {
-    const {media} = await ai.generate({
-      // IMPORTANT: ONLY the googleai/gemini-2.0-flash-preview-image-generation model is able to generate images. You MUST use exactly this model to generate images.
-      model: 'googleai/gemini-2.0-flash-preview-image-generation',
+  async (input) => {
+    const maxRetries = 3;
+    let lastError: any;
 
-      // simple prompt
-      prompt: `Generate an image of a ${input.recipeName} recipe with the following ingredients ${input.ingredients}. The instructions are ${input.instructions}`,
-
-      config: {
-        responseModalities: ['TEXT', 'IMAGE'], // MUST provide both TEXT and IMAGE, IMAGE only won't work
-      },
-    });
-    if (!media || !media.url) {
-      throw new Error('Could not generate image for recipe.');
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        const {media} = await ai.generate({
+          model: 'googleai/gemini-2.0-flash-preview-image-generation',
+          prompt: `Generate an image of a ${input.recipeName} recipe with the following ingredients ${input.ingredients}. The instructions are ${input.instructions}`,
+          config: {
+            responseModalities: ['TEXT', 'IMAGE'],
+          },
+        });
+        if (!media || !media.url) {
+          throw new Error('Could not generate image for recipe.');
+        }
+        return {imageUrl: media.url};
+      } catch (error: any) {
+        lastError = error;
+        const isServiceUnavailable =
+          error.message?.includes('503') ||
+          error.message?.includes('overloaded');
+          
+        if (isServiceUnavailable && i < maxRetries - 1) {
+          console.warn(
+            `AI model service unavailable. Retrying attempt ${i + 2} of ${maxRetries}...`
+          );
+          await new Promise(resolve =>
+            setTimeout(resolve, 1000 * Math.pow(2, i))
+          );
+        } else {
+          throw lastError;
+        }
+      }
     }
-    return {imageUrl: media.url};
+    throw lastError;
   }
 );

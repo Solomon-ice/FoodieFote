@@ -66,8 +66,32 @@ const generateFallbackDessertFlow = ai.defineFlow(
     inputSchema: GenerateFallbackDessertInputSchema,
     outputSchema: GenerateFallbackDessertOutputSchema,
   },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
+  async (input) => {
+    const maxRetries = 3;
+    let lastError: any;
+
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        const {output} = await prompt(input);
+        return output!;
+      } catch (error: any) {
+        lastError = error;
+        const isServiceUnavailable =
+          error.message?.includes('503') ||
+          error.message?.includes('overloaded');
+          
+        if (isServiceUnavailable && i < maxRetries - 1) {
+          console.warn(
+            `AI model service unavailable. Retrying attempt ${i + 2} of ${maxRetries}...`
+          );
+          await new Promise(resolve =>
+            setTimeout(resolve, 1000 * Math.pow(2, i))
+          );
+        } else {
+          throw lastError;
+        }
+      }
+    }
+    throw lastError;
   }
 );
