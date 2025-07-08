@@ -11,12 +11,6 @@ import { generateFallbackDessert } from '@/ai/flows/generate-fallback-dessert';
 import CameraCapture from '@/components/camera-capture';
 import RecipeCard from '@/components/recipe-card';
 import { Logo } from '@/components/icons';
-import AuthWrapper from '@/components/auth-wrapper';
-import { useAuth } from '@/hooks/use-auth';
-import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
-import { useRouter } from 'next/navigation';
-
 
 type AppState = 'initial' | 'capturing' | 'processing' | 'displaying' | 'error';
 type Recipe = {
@@ -26,29 +20,12 @@ type Recipe = {
   imageUrl: string;
 };
 
-function HomePageContent() {
+export default function HomePage() {
   const [appState, setAppState] = useState<AppState>('initial');
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [processingMessage, setProcessingMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const { user } = useAuth();
-  const router = useRouter();
-
-
-  const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-      router.push('/login');
-    } catch (error) {
-      console.error('Error signing out', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error Signing Out',
-        description: 'There was a problem signing you out. Please try again.',
-      });
-    }
-  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -118,7 +95,7 @@ function HomePageContent() {
           <div className="text-center animate-in fade-in duration-500">
             <h2 className="font-headline text-3xl md:text-4xl font-semibold">
               <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Welcome, {user?.displayName?.split(' ')[0]}!
+                Welcome!
               </span>
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
@@ -191,7 +168,6 @@ function HomePageContent() {
                 <Logo className="h-8 w-8 text-primary" />
                 <h1 className="font-headline text-3xl font-bold text-primary-foreground/90">FoodieFoto</h1>
             </div>
-            <Button onClick={handleSignOut} variant="secondary">Sign Out</Button>
         </div>
       </header>
       <main className="flex-grow flex items-center justify-center p-4">
@@ -204,12 +180,4 @@ function HomePageContent() {
       </footer>
     </div>
   );
-}
-
-export default function Home() {
-    return (
-        <AuthWrapper>
-            <HomePageContent />
-        </AuthWrapper>
-    )
 }
