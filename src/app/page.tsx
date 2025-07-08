@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, useCallback } from 'react';
-import { Loader2, Upload, Camera, UtensilsCrossed } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Loader2, Upload, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { identifyFood } from '@/ai/flows/identify-food';
@@ -11,6 +11,12 @@ import { generateFallbackDessert } from '@/ai/flows/generate-fallback-dessert';
 import CameraCapture from '@/components/camera-capture';
 import RecipeCard from '@/components/recipe-card';
 import { Logo } from '@/components/icons';
+import AuthWrapper from '@/components/auth-wrapper';
+import { useAuth } from '@/hooks/use-auth';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { useRouter } from 'next/navigation';
+
 
 type AppState = 'initial' | 'capturing' | 'processing' | 'displaying' | 'error';
 type Recipe = {
@@ -20,12 +26,29 @@ type Recipe = {
   imageUrl: string;
 };
 
-export default function Home() {
+function HomePageContent() {
   const [appState, setAppState] = useState<AppState>('initial');
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [processingMessage, setProcessingMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const router = useRouter();
+
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      router.push('/login');
+    } catch (error) {
+      console.error('Error signing out', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error Signing Out',
+        description: 'There was a problem signing you out. Please try again.',
+      });
+    }
+  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -93,8 +116,10 @@ export default function Home() {
       case 'initial':
         return (
           <div className="text-center animate-in fade-in duration-500">
-            <h2 className="font-headline text-3xl md:text-4xl font-semibold text-primary-foreground/90">
-              What are we cooking today?
+            <h2 className="font-headline text-3xl md:text-4xl font-semibold">
+              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Welcome, {user?.displayName?.split(' ')[0]}!
+              </span>
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
               Upload a photo or take a picture of your ingredients.
@@ -161,9 +186,12 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       <header className="py-6 px-4 sm:px-6">
-        <div className="mx-auto max-w-4xl flex items-center gap-3">
-          <Logo className="h-8 w-8 text-primary" />
-          <h1 className="font-headline text-3xl font-bold text-primary-foreground/90">FoodieFoto</h1>
+        <div className="mx-auto max-w-4xl flex items-center justify-between">
+            <div className="flex items-center gap-3">
+                <Logo className="h-8 w-8 text-primary" />
+                <h1 className="font-headline text-3xl font-bold text-primary-foreground/90">FoodieFoto</h1>
+            </div>
+            <Button onClick={handleSignOut} variant="secondary">Sign Out</Button>
         </div>
       </header>
       <main className="flex-grow flex items-center justify-center p-4">
@@ -176,4 +204,12 @@ export default function Home() {
       </footer>
     </div>
   );
+}
+
+export default function Home() {
+    return (
+        <AuthWrapper>
+            <HomePageContent />
+        </AuthWrapper>
+    )
 }
